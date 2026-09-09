@@ -1,0 +1,59 @@
+services:
+  api:
+    build:
+      context: ./FinancialMonitor.Api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Database__Provider: Postgres
+      Cache__Provider: Redis
+      ConnectionStrings__Redis: redis:6379
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=financial_monitor;Username=postgres;Password=postgres
+    ports:
+      - "8080:8080"
+    volumes:
+      - api-data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  client:
+    build:
+      context: ./FinancialMonitor.Client
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "8081:80"
+    depends_on:
+      - api
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: financial_monitor
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d financial_monitor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  api-data:
+  postgres-data:

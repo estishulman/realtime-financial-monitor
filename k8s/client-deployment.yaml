@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: financial-monitor-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: financial-monitor-client
+  template:
+    metadata:
+      labels:
+        app: financial-monitor-client
+    spec:
+      containers:
+        - name: client
+          image: financial-monitor-client:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: financial-monitor-client
+spec:
+  selector:
+    app: financial-monitor-client
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
