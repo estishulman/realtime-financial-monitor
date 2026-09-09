@@ -1,65 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { Transaction, TransactionStatus } from '../models/transaction'
-import { getTransactions } from '../services/transactionApi'
-import { createTransactionHub } from '../services/transactionHub'
+import { useMemo, useState } from 'react'
+import type { TransactionStatus } from '../models/transaction'
+import { HubConnectionState } from '@microsoft/signalr'
+import { useTransactionRealtime } from '../contexts/useTransactionRealtime'
 
 type Filter = 'All' | TransactionStatus
 
 export function MonitorPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
   const [filter, setFilter] = useState<Filter>('All')
-  const [isConnected, setIsConnected] = useState(false)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    let active = true
-    let frameId: number | undefined
-    const pendingTransactions = new Map<string, Transaction>()
-
-    function flushTransactions() {
-      frameId = undefined
-      if (pendingTransactions.size === 0) return
-
-      const incomingTransactions = [...pendingTransactions.values()]
-      pendingTransactions.clear()
-      setTransactions((current) => {
-        const updated = new Map(current.map((transaction) => [transaction.transactionId, transaction]))
-        for (const transaction of incomingTransactions) {
-          const previous = updated.get(transaction.transactionId)
-          console.info(
-            previous ? '[Monitor] Updating transaction row' : '[Monitor] Adding transaction row',
-            transaction.transactionId,
-            previous ? `${previous.status} -> ${transaction.status}` : transaction.status,
-          )
-          updated.set(transaction.transactionId, transaction)
-        }
-
-        const incomingIds = new Set(incomingTransactions.map((transaction) => transaction.transactionId))
-        const existing = [...updated.values()].filter((transaction) => !incomingIds.has(transaction.transactionId))
-        return [...incomingTransactions, ...existing]
-      })
-    }
-
-    const hub = createTransactionHub((transaction) => {
-      pendingTransactions.set(transaction.transactionId, transaction)
-      if (frameId === undefined) frameId = requestAnimationFrame(flushTransactions)
-    })
-    async function connect() {
-      try {
-        const stored = await getTransactions()
-        if (active) setTransactions([...stored].reverse())
-        await hub.start()
-        if (active) setIsConnected(true)
-      } catch { if (active) setError('Live connection unavailable. Start the backend and refresh.') }
-    }
-    void connect()
-    return () => {
-      active = false
-      if (frameId !== undefined) cancelAnimationFrame(frameId)
-      pendingTransactions.clear()
-      void hub.stop()
-    }
-  }, [])
+  const { transactions, connectionState, error } = useTransactionRealtime()
+  const isConnected = connectionState === HubConnectionState.Connected
 
   const visibleTransactions = useMemo(() => filter === 'All' ? transactions : transactions.filter((transaction) => transaction.status === filter), [filter, transactions])
   return <section className="page-grid">
