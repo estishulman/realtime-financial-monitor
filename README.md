@@ -134,7 +134,9 @@ Backend tests cover:
 
 - Validation and transaction processing.
 - Repository behavior and concurrency.
+- Cache hit, cache miss, and cache invalidation.
 - HTTP ingestion and retrieval.
+- End-to-end API flow from POST through asynchronous processing to final status.
 - Channel enqueueing.
 - SignalR broadcasting.
 - Concurrent requests.

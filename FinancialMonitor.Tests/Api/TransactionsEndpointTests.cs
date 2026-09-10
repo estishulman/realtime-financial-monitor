@@ -83,4 +83,34 @@ public sealed class TransactionsEndpointTests : IClassFixture<WebApplicationFact
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains(stored!, saved => saved.TransactionId == transaction.TransactionId);
     }
+
+    [Theory]
+    [InlineData(1500, TransactionStatus.Completed)]
+    [InlineData(10001, TransactionStatus.Failed)]
+    public async Task PostThenGet_ReturnsProcessedFinalStatus(
+        decimal amount,
+        TransactionStatus expectedStatus)
+    {
+        var transaction = new Transaction(
+            Guid.NewGuid().ToString(),
+            amount,
+            "USD",
+            TransactionStatus.Pending,
+            DateTime.UtcNow);
+
+        var postResponse = await client.PostAsJsonAsync("/api/transactions", transaction);
+        Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
+
+        Transaction? stored = null;
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            var transactions = await client.GetFromJsonAsync<Transaction[]>("/api/transactions");
+            stored = transactions?.SingleOrDefault(item => item.TransactionId == transaction.TransactionId);
+            if (stored?.Status == expectedStatus) break;
+            await Task.Delay(25);
+        }
+
+        Assert.NotNull(stored);
+        Assert.Equal(expectedStatus, stored!.Status);
+    }
 }
