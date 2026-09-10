@@ -15,6 +15,14 @@ public sealed class TransactionsEndpointTests : IClassFixture<WebApplicationFact
     }
 
     [Fact]
+    public async Task Health_ReturnsOk()
+    {
+        var response = await client.GetAsync("/health");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
     public async Task PostTransactions_ValidTransaction_ReturnsCreated()
     {
         var transaction = new Transaction(

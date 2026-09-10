@@ -50,6 +50,7 @@ flowchart LR
 
 - `POST /api/transactions` for transaction ingestion.
 - `GET /api/transactions` for the initial dashboard snapshot.
+- `GET /health` for API and database readiness.
 - SignalR over WebSocket for real-time updates.
 - `Pending` to `Completed` or `Failed` processing flow.
 - Thread-safe asynchronous pipeline using `Channel<Transaction>`.

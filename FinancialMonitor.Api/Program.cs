@@ -8,6 +8,7 @@ using FinancialMonitor.Api.Presentation.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using FinancialMonitor.Api.Infrastructure.Caching;
+using FinancialMonitor.Api.Infrastructure.Health;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 
@@ -16,6 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 const string frontendCorsPolicy = "FrontendCors";
 
 builder.Services.AddControllers();
+builder.Services.AddHealthChecks()
+	.AddCheck<DatabaseHealthCheck>("database");
 builder.Services.AddCors(options =>
 {
 	options.AddPolicy(frontendCorsPolicy, policy =>
@@ -87,6 +90,7 @@ var app = builder.Build();
 await DatabaseInitializer.InitializeAsync(app.Services);
 
 app.UseCors(frontendCorsPolicy);
+app.MapHealthChecks("/health");
 app.MapControllers();
 app.MapHub<TransactionHub>("/hubs/transactions");
 
