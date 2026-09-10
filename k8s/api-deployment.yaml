@@ -20,6 +20,12 @@ spec:
           env:
             - name: ASPNETCORE_URLS
               value: http://+:8080
+            - name: Database__Provider
+              value: Postgres
+            - name: Cache__Provider
+              value: Redis
+            - name: ConnectionStrings__DefaultConnection
+              value: Host=postgres;Port=5432;Database=financial_monitor;Username=postgres;Password=postgres
             - name: ConnectionStrings__Redis
               value: redis:6379
 ---

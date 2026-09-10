@@ -155,7 +155,23 @@ npm run lint
 
 ## Cloud-Ready Design
 
-The `k8s` directory contains example deployments for the API, frontend, and Redis. The API is designed to scale across replicas when connected to a shared PostgreSQL database and Redis Backplane.
+The `k8s` directory contains example deployments for the API, frontend, PostgreSQL, and Redis. The API is designed to scale across replicas when connected to a shared PostgreSQL database and Redis Backplane.
+
+For a local/demo Kubernetes cluster, make sure the images are available to the cluster and build the frontend with a browser-accessible API URL:
+
+```bash
+docker build --build-arg VITE_API_BASE_URL=https://api.example.com -t financial-monitor-client:latest FinancialMonitor.Client
+kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/redis.yaml
+kubectl apply -f k8s/api-deployment.yaml
+kubectl apply -f k8s/client-deployment.yaml
+```
+
+`https://api.example.com` must point to an externally reachable API endpoint, not the internal Kubernetes `ClusterIP`. In a real cluster, expose the API through an Ingress or a public LoadBalancer and configure WebSocket upgrade support for SignalR.
+
+The example manifests are intended for demonstration. Production should use a container registry, Secrets instead of inline passwords, durable PostgreSQL/Redis storage, health probes, and resource limits.
+
+The API uses EF Core `EnsureCreated` for this MVP. A production system should use versioned EF Core migrations.
 
 For production, the deployment should additionally provide managed PostgreSQL, secrets management, health probes, resource limits, durable Redis configuration, and tagged container images.
 
