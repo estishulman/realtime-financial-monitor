@@ -63,7 +63,9 @@ else
 builder.Services.AddSingleton<ITransactionRepository>(services =>
 	new CachedTransactionRepository(
 		services.GetRequiredService<EfTransactionRepository>(),
-		services.GetRequiredService<ITransactionCache>()));
+		services.GetRequiredService<ITransactionCache>(),
+		services.GetRequiredService<ILoggerFactory>()
+			.CreateLogger<CachedTransactionRepository>()));
 builder.Services.AddSingleton<ITransactionService, TransactionService>();
 builder.Services.AddSingleton<ITransactionProcessor, TransactionProcessor>();
 builder.Services.AddSingleton(Channel.CreateUnbounded<Transaction>(new UnboundedChannelOptions
