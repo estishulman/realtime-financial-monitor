@@ -132,14 +132,7 @@ http://localhost:5173
 
 Backend tests cover:
 
-- Validation and transaction processing.
-- Repository behavior and concurrency.
-- Cache hit, cache miss, and cache invalidation.
-- HTTP ingestion and retrieval.
-- End-to-end API flow from POST through asynchronous processing to final status.
-- Channel enqueueing.
-- SignalR broadcasting.
-- Concurrent requests.
+The solution includes unit tests and integration tests for validation, persistence, concurrent ingestion, asynchronous processing, caching, HTTP workflows, and SignalR broadcasting.
 
 Run all backend tests:
 
