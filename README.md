@@ -4,8 +4,6 @@ A real-time financial transaction monitor built with .NET 9, SignalR, React, Typ
 
 ## Run with Docker Compose
 
-The quickest way to run the complete system is Docker Compose.
-
 1. Start Docker Desktop.
 2. From the repository root, run:
 
