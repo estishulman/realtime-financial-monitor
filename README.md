@@ -105,7 +105,7 @@ Redis has two separate responsibilities in the multi-replica setup:
 PostgreSQL is the shared, authoritative data store. Redis does not replace the database.
 
 ## Transaction Processing
-
+For demonstration purposes, incoming transactions follow a deterministic rule set:
 Every new transaction starts as `Pending`.
 
 - Amount up to `10,000`: `Completed`.
