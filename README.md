@@ -65,6 +65,17 @@ flowchart LR
 | `/add` | Create transactions and run the 100-transaction load test. |
 | `/monitor` | View stored transactions and receive live SignalR updates. |
 
+## Project Structure
+
+```text
+FinancialMonitor.Api/       .NET API, processing, persistence, caching, and SignalR
+FinancialMonitor.Tests/     Unit and API integration tests
+FinancialMonitor.Client/    React routes, dashboard, simulator, and SignalR client
+k8s/                        Kubernetes deployment examples
+docker-compose.yml          Local multi-service runtime
+README.md                   Architecture and setup documentation
+```
+
 ## Architecture
 
 ### Backend layers
@@ -131,8 +142,6 @@ http://localhost:5173
 
 ## Testing
 
-Backend tests cover:
-
 The solution includes unit tests and integration tests for validation, persistence, concurrent ingestion, asynchronous processing, caching, HTTP workflows, and SignalR broadcasting.
 
 Run all backend tests:
@@ -151,25 +160,7 @@ npm run lint
 
 ## Cloud-Ready Design
 
-The `k8s` directory contains example deployments for the API, frontend, PostgreSQL, and Redis. The API is designed to scale across replicas when connected to a shared PostgreSQL database and Redis Backplane.
-
-For a local/demo Kubernetes cluster, make sure the images are available to the cluster and build the frontend with a browser-accessible API URL:
-
-```bash
-docker build --build-arg VITE_API_BASE_URL=https://api.example.com -t financial-monitor-client:latest FinancialMonitor.Client
-kubectl apply -f k8s/postgres.yaml
-kubectl apply -f k8s/redis.yaml
-kubectl apply -f k8s/api-deployment.yaml
-kubectl apply -f k8s/client-deployment.yaml
-```
-
-`https://api.example.com` must point to an externally reachable API endpoint, not the internal Kubernetes `ClusterIP`. In a real cluster, expose the API through an Ingress or a public LoadBalancer and configure WebSocket upgrade support for SignalR.
-
-The example manifests are intended for demonstration. Production should use a container registry, Secrets instead of inline passwords, durable PostgreSQL/Redis storage, health probes, and resource limits.
-
-The API uses EF Core `EnsureCreated` for this MVP. A production system should use versioned EF Core migrations.
-
-For production, the deployment should additionally provide managed PostgreSQL, secrets management, health probes, resource limits, durable Redis configuration, and tagged container images.
+The `k8s` directory contains example deployments for the API, frontend, PostgreSQL, and Redis. The API is designed to scale across replicas with a shared PostgreSQL database and Redis Backplane.
 
 ## Key Challenges Solved
 
@@ -180,3 +171,10 @@ For production, the deployment should additionally provide managed PostgreSQL, s
 - Cache invalidation after database writes.
 - Shared database and SignalR synchronization for multiple replicas.
 - Responsive rendering during bursts of 100 transactions.
+
+## Future Improvements
+
+- Browser-level E2E tests covering the complete workflow across the frontend, API, database, cache, asynchronous processing, and SignalR.
+- EF Core migrations instead of `EnsureCreated` for production schema management.
+- A durable message broker such as RabbitMQ or Kafka for reliable processing, retries, and decoupling between ingestion and downstream consumers.
+- Kubernetes Ingress, Secrets, health probes, and production-grade persistent storage.
